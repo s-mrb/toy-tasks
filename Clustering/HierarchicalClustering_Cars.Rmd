@@ -1,0 +1,234 @@
+---
+title: "Hierarchical Clustering Using Cars Dataset"
+author: "mehdi"
+date: "1/4/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# LOAD DATA AND VIEW
+
+```{r,results='hide', show="hide"}
+data1 = read.csv("cars.csv")
+```
+
+
+```{r,results='hide', show="hide"}
+data2 =  read.table("cars.csv",sep = ",")
+```
+
+We using import hence remove remove current variables
+```{r}
+rm(list=ls())
+```
+
+
+Install rio, rio give access to import
+```{r}
+# require(rio)
+# or
+pacman::p_load(pacman, rio) 
+```
+
+```{r}
+carsData = import('cars.csv')
+```
+
+
+```{r}
+head(carsData)
+```
+
+
+
+
+# PREPROCESS AND DENDOGRAM
+
+
+```{r}
+typeof(carsData$Dimensions.Height)
+```
+
+
+
+```{r}
+# Make sure xml2 is installed on ubuntu
+install.packages("rvest",dependencies = TRUE)
+```
+
+
+```{r}
+# Make sure xml2 and rvest are installed
+install.packages("tidyverse")
+library(tidyverse)
+```
+
+# Clean Your Data and Re-shape it
+
+
+
+
+```{r}
+vars = colnames(carsData)
+vars
+```
+
+
+
+```{r}
+unique(carsData[13])
+```
+
+
+```{r}
+largecars = dplyr::filter(carsData, carsData$`Engine Information.Driveline` == "Four-wheel drive" | carsData$`Engine Information.Driveline` == "All-wheel drive" , carsData$`Engine Information.Number of Forward Gears`>7)
+```
+
+```{r}
+largecars
+```
+
+Test for Engine Information.Driveline
+```{r}
+unique(carsData[4])
+unique(largecars[4])
+```
+Test for Engine Information.Number of Forward Gears
+```{r}
+
+# unique gearss no in original data
+unique(carsData[7])
+
+# unique gearss no in new data
+unique(largecars[7])
+```
+
+Get data types of all cols
+```{r}
+unique(sapply(largecars, typeof))
+```
+
+Create a new dataset (data frame) called largecars.fewer (from the data set
+largecars) that contains only the quantitative variables and the variable
+Identification.ID
+```{r}
+largecars.fewer = largecars %>% 
+  select_at(vars(names(.)[map_lgl(., is.numeric)], "Identification.ID"))
+```
+
+OR
+
+```{r}
+largecars.fewer2 = largecars %>% 
+  select_if(names(.)=="Identification.ID" | sapply(., is.numeric))
+```
+
+```{r}
+unique(sapply(largecars.fewer, typeof))
+unique(sapply(largecars.fewer2, typeof))
+```
+
+
+Re-order columns
+make Identification.ID as first
+```{r}
+largecars.fewer.ordered = largecars.fewer %>%
+  dplyr::relocate("Identification.ID")
+```
+
+
+View Ordered data
+```{r}
+largecars.fewer.ordered
+largecars.fewer
+```
+
+```{r}
+x = largecars.fewer.ordered[,-1]
+unique(sapply(x,typeof))
+```
+```{r}
+largecars.fewer.ordered[1]
+```
+
+
+
+
+Remove Non-numeric cols
+```{r}
+rownames(largecars.fewer.ordered) <- largecars.fewer.ordered[,1]
+largecars.fewer.ordered[,1] <- NULL
+
+```
+
+
+see the changed data
+```{r}
+
+unique(sapply(largecars.fewer.ordered,typeof))
+```
+
+
+
+## Data Processing
+
+
+### Remove NA vals
+```{r}
+processed_data = na.omit(largecars.fewer.ordered)
+```
+
+### Scale Vals
+```{r}
+processed_data2 <- scale(processed_data)
+```
+
+
+### Distance heuristic
+```{r}
+require(stats)
+processed_data3 = dist(x=processed_data2, method = "euclidean")
+
+```
+
+
+#### View
+```{r}
+as.matrix(processed_data3)[1:10]
+```
+
+
+### Round
+
+```{r}
+round(processed_data3, digits=3)
+```
+
+
+Compute cluster
+```{r}
+hcl = hclust(d=processed_data3, method="complete")
+```
+
+
+plot cluster
+```{r}
+plot(hcl)
+```
+
+```{r}
+# install.packages("factoextra")
+require(factoextra)
+```
+
+```{r}
+fviz_dend(x=hcl, cex=0.5, lwd=0.5)
+```
+
+
+
+

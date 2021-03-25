@@ -1,0 +1,144 @@
+---
+title: "Regression mtcars"
+author: "mehdi"
+date: "1/4/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+We using import hence remove remove current variables
+```{r}
+rm(list=ls())
+```
+
+
+# LOAD DATA 
+
+```{r}
+data("mtcars")
+```
+
+
+# EXPLORE
+
+```{r}
+head(mtcars)
+```
+
+
+Variable name
+```{r}
+vars = colnames(mtcars)
+vars
+```
+
+
+See if any data is not of numeric type
+```{r}
+str(mtcars)
+```
+
+
+OR
+
+
+Get data types of all cols
+```{r}
+unique(sapply(mtcars, typeof))
+```
+
+
+# PREPROCESS
+
+
+
+
+
+```{r}
+# Make sure xml2 is installed on ubuntu
+install.packages("rvest",dependencies = TRUE)
+```
+
+
+```{r}
+# Make sure xml2 and rvest are installed
+install.packages("tidyverse")
+library(tidyverse)
+```
+
+
+
+
+
+# Data Processing
+
+
+### Remove NA vals
+```{r}
+processed_data = na.omit(mtcars)
+```
+
+### Scale Vals
+```{r}
+processed_data <- scale(processed_data)
+```
+
+
+
+### Round
+
+```{r}
+round(processed_data, digits=3)
+```
+
+
+### plot
+```{r}
+plot(processed_data)
+```
+
+
+Model
+```{r}
+lmodel = lm(mtcars$mpg ~ . -mtcars$disp, data = mtcars)
+```
+
+```{r}
+summary(lmodel)
+```
+
+
+```{r}
+library(ggplot2)
+```
+
+```{r}
+ggplot(mtcars,aes(x = mpg, y = cyl))+
+
+   geom_point(aes(x = mpg,y = disp) ,color = "blue", size = 2.5)+
+    geom_point(aes(x = mpg,y = hp) ,color = "orange", size = 2.5)+
+      geom_point(aes(x = mpg,y = drat) ,color = "cyan", size = 2.5)+
+       geom_point(aes(x = mpg,y = wt) ,color = "black", size = 2.5)+
+        geom_point(aes(x = mpg,y = qsec) ,color = "yellow", size = 2.5)+
+          geom_point(aes(x = mpg,y = vs) ,color = "grey", size = 2.5)+
+            geom_point(aes(x = mpg,y = am) ,color = "khaki", size = 2.5)+
+              geom_point(aes(x = mpg,y = gear) ,color = "violet", size = 2.5)+
+                geom_point(aes(x = mpg,y = carb) ,color = "tan1", size = 2.5)+
+                  stat_smooth(method = "lm", col = "red")
+```
+
+Regression Line
+```{r}
+plot(x=mtcars$mpg, y=mtcars$cyl)+
+  points(x=mtcars$mpg,y=mtcars$hp)
+  plo(y=mtcars$hp)
+abline(lmodel, lwd=4)
+```
+
+```{r}
+plot(lmodel)
+```
